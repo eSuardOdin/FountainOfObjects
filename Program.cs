@@ -19,11 +19,49 @@ Découpage des tâches :
 
 */
 
+
+Player player = new Player();
+Map map = new Map();
+Game game = new Game(player, map);
+
+game.RunGame();
+
+
 public class Game 
 {
-    private Player player {get; set;}
-    private Map map {get; set;}
+    private Player Player {get; set;}
+    private Map Map {get; set;}
 
+    public Game(Player player, Map map) 
+    {
+        Player = player;
+        Map = map;
+    }
+    private void RunCommand(IPlayerCommand command) 
+    {
+        if(command.RunCommand(Player)) 
+        {
+            Console.Clear();
+            Console.WriteLine("Game.RunCommand()");
+            Console.WriteLine(Player.Position.ToString());
+        }
+    }
+
+    public void RunGame() 
+    {
+        while(Player.IsAlive)
+        {
+            IPlayerCommand command = InputHandler.GetPlayerMove().Key switch
+            {
+                ConsoleKey.RightArrow => new East(),
+                ConsoleKey.LeftArrow => new West(),
+                ConsoleKey.UpArrow => new North(),
+                ConsoleKey.DownArrow => new South(),
+            };
+            Console.WriteLine(command);
+            RunCommand(command);
+        }
+    }
 }
 
 public class Map 
@@ -65,16 +103,17 @@ public class Room
 
 public interface IPlayerCommand
 {
-    public bool Run(Player player);
+    public bool RunCommand(Player player);
 }
 
 public class North : IPlayerCommand
 {
-    public bool Run(Player player)
+    public bool RunCommand(Player player)
     {
         if(player.IsAlive) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y+1);
+            return true;
         }
 
         return false;
@@ -83,11 +122,12 @@ public class North : IPlayerCommand
 
 public class South : IPlayerCommand
 {
-    public bool Run(Player player)
+    public bool RunCommand(Player player)
     {
         if(player.IsAlive) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y-1);
+            return true;
         }
 
         return false;
@@ -96,11 +136,12 @@ public class South : IPlayerCommand
 
 public class East : IPlayerCommand
 {
-    public bool Run(Player player)
+    public bool RunCommand(Player player)
     {
         if(player.IsAlive) 
         {
             player.Position = new Position(player.Position.X+1, player.Position.Y);
+            return true;
         }
 
         return false;
@@ -109,14 +150,34 @@ public class East : IPlayerCommand
 
 public class West : IPlayerCommand
 {
-    public bool Run(Player player)
+    public bool RunCommand(Player player)
     {
         if(player.IsAlive) 
         {
             player.Position = new Position(player.Position.X-1, player.Position.Y);
+            return true;
         }
 
         return false;
+    }
+}
+
+public static class InputHandler {
+
+    public static ConsoleKeyInfo GetPlayerMove() {
+        ConsoleKeyInfo key;
+
+        do {
+            Console.WriteLine("Please enter next direction with arrow key...");
+            key = Console.ReadKey();
+        } while(
+            key.Key != ConsoleKey.RightArrow &&
+            key.Key != ConsoleKey.LeftArrow &&
+            key.Key != ConsoleKey.UpArrow &&
+            key.Key != ConsoleKey.DownArrow
+        );
+        Console.WriteLine($"Key : {key.Key}");
+        return key;
     }
 }
 
