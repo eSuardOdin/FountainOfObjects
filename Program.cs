@@ -21,7 +21,7 @@ Découpage des tâches :
 
 
 Player player = new Player();
-Map map = new Map();
+Map map = new Map(new Position(4,2), new Position(5,3), 7, 4);
 Game game = new Game(player, map);
 
 game.RunGame();
@@ -66,8 +66,26 @@ public class Game
 
 public class Map 
 {
-    Room[] Rooms;
-// O
+    Room[,] Rooms;
+    public Map(Position spawn, Position fountain, int width, int length)
+    {
+        Rooms = new Room[width,length];
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < length; y++)
+            {
+                RoomType type;
+                if(x == spawn.X && y == spawn.Y) type = RoomType.Spawn;
+                else if(x == fountain.X && y == fountain.Y) type = RoomType.Fountain;
+                else type = RoomType.Normal;
+
+                Rooms[x,y] = new Room(type);
+                Console.Write($"   {type}   ");
+            }
+            Console.WriteLine();
+        }
+        Console.WriteLine("Enter a key to exit map generation...");
+    }
 }
 
 public record Position(int X, int Y);
@@ -181,4 +199,4 @@ public static class InputHandler {
     }
 }
 
-public enum RoomType {Start, Fountain, Normal, OffMap};
+public enum RoomType {Spawn, Fountain, Normal, OffMap};
