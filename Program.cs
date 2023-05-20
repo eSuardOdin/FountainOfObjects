@@ -57,7 +57,7 @@ public class Game
     {
         while(Player.IsAlive)
         {
-            if(Map.IsFountainActive && Player.Position.Equals(Map.Fountain)) 
+            if(Map.IsFountainActive && Player.Position.Equals(Map.Spawn)) 
             {
                 Console.Clear();
                 Console.WriteLine("You escaped, congratulations.");
