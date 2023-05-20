@@ -39,7 +39,8 @@ public class Game
     }
     private void RunCommand(IPlayerCommand command) 
     {
-        if(command.RunCommand(Player, Map)) 
+        (bool isCommand, string error) = command.RunCommand(Player, Map);
+        if(isCommand) 
         {
             Console.Clear();
             Console.WriteLine(Player.Position.ToString());
@@ -48,7 +49,7 @@ public class Game
         {
             Console.Clear();
             Console.WriteLine(Player.Position.ToString());
-            Console.WriteLine("Cannot move outside map !");
+            Console.WriteLine(error);
         }
     }
 
@@ -126,64 +127,73 @@ public class Room
 
 public interface IPlayerCommand
 {
-    public bool RunCommand(Player player, Map map);
+    public (bool, string) RunCommand(Player player, Map map);
 }
 
 public class North : IPlayerCommand
 {
-    public bool RunCommand(Player player, Map map)
+    public (bool, string) RunCommand(Player player, Map map)
     {
         if(player.IsAlive && player.Position.Y < map.Rooms.GetLength(1) - 1) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y+1);
-            return true;
+            return (true, "");
         }
 
-        return false;
+        return (false, "Cannot move outside map !");
     }
 }
 
 public class South : IPlayerCommand
 {
-    public bool RunCommand(Player player, Map map)
+    public (bool, string) RunCommand(Player player, Map map)
     {
         if(player.IsAlive && player.Position.Y > 0) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y-1);
-            return true;
-        }
+            return (true, "");
 
-        return false;
+        }
+        return (false, "Cannot move outside map !");
     }
 }
 
 public class East : IPlayerCommand
 {
-    public bool RunCommand(Player player, Map map)
+    public (bool, string) RunCommand(Player player, Map map)
     {
         if(player.IsAlive && player.Position.X < map.Rooms.GetLength(0) - 1) 
         {
             player.Position = new Position(player.Position.X+1, player.Position.Y);
-            return true;
+            return (true, "");
         }
-
-        return false;
+        return (false, "Cannot move outside map !");
     }
 }
 
 public class West : IPlayerCommand
 {
-    public bool RunCommand(Player player, Map map)
+    public (bool, string) RunCommand(Player player, Map map)
     {
         if(player.IsAlive && player.Position.X > 0)  
         {
             player.Position = new Position(player.Position.X-1, player.Position.Y);
-            return true;
+            return (true, "");
         }
 
-        return false;
+        return (false, "Cannot move outside map !");
     }
 }
+
+public class ActivateFountain : IPlayerCommand
+{
+    public (bool, string) RunCommand(Player player, Map map)
+    {
+
+        return (false, "No fountain to activate");
+    }
+}
+
 
 public static class InputHandler {
 
