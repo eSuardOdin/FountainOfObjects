@@ -39,11 +39,16 @@ public class Game
     }
     private void RunCommand(IPlayerCommand command) 
     {
-        if(command.RunCommand(Player)) 
+        if(command.RunCommand(Player, Map)) 
         {
             Console.Clear();
-            Console.WriteLine("Game.RunCommand()");
             Console.WriteLine(Player.Position.ToString());
+        }
+        else
+        {
+            Console.Clear();
+            Console.WriteLine(Player.Position.ToString());
+            Console.WriteLine("Cannot move outside map !");
         }
     }
 
@@ -66,7 +71,7 @@ public class Game
 
 public class Map 
 {
-    Room[,] Rooms;
+    public Room[,] Rooms {get;}
     public Map(Position spawn, Position fountain, int width, int length)
     {
         Rooms = new Room[width,length];
@@ -121,14 +126,14 @@ public class Room
 
 public interface IPlayerCommand
 {
-    public bool RunCommand(Player player);
+    public bool RunCommand(Player player, Map map);
 }
 
 public class North : IPlayerCommand
 {
-    public bool RunCommand(Player player)
+    public bool RunCommand(Player player, Map map)
     {
-        if(player.IsAlive) 
+        if(player.IsAlive && player.Position.Y < map.Rooms.GetLength(1) - 1) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y+1);
             return true;
@@ -140,9 +145,9 @@ public class North : IPlayerCommand
 
 public class South : IPlayerCommand
 {
-    public bool RunCommand(Player player)
+    public bool RunCommand(Player player, Map map)
     {
-        if(player.IsAlive) 
+        if(player.IsAlive && player.Position.Y > 0) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y-1);
             return true;
@@ -154,9 +159,9 @@ public class South : IPlayerCommand
 
 public class East : IPlayerCommand
 {
-    public bool RunCommand(Player player)
+    public bool RunCommand(Player player, Map map)
     {
-        if(player.IsAlive) 
+        if(player.IsAlive && player.Position.X < map.Rooms.GetLength(0) - 1) 
         {
             player.Position = new Position(player.Position.X+1, player.Position.Y);
             return true;
@@ -168,9 +173,9 @@ public class East : IPlayerCommand
 
 public class West : IPlayerCommand
 {
-    public bool RunCommand(Player player)
+    public bool RunCommand(Player player, Map map)
     {
-        if(player.IsAlive) 
+        if(player.IsAlive && player.Position.X > 0)  
         {
             player.Position = new Position(player.Position.X-1, player.Position.Y);
             return true;
