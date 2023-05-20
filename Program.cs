@@ -57,6 +57,12 @@ public class Game
     {
         while(Player.IsAlive)
         {
+            if(Map.IsFountainActive && Player.Position.Equals(Map.Fountain)) 
+            {
+                Console.Clear();
+                Console.WriteLine("You escaped, congratulations.");
+                break;
+            }
             IPlayerCommand command = InputHandler.GetPlayerMove().Key switch
             {
                 ConsoleKey.RightArrow => new East(),
