@@ -65,7 +65,6 @@ public class Game
                 ConsoleKey.DownArrow => new South(),
                 ConsoleKey.E => new ActivateFountain(),
             };
-            Console.WriteLine(command);
             RunCommand(command);
         }
     }
@@ -94,9 +93,26 @@ public class Map
                 else type = RoomType.Normal;
 
                 Rooms[x,y] = new Room(type);
-                Console.Write($"   {type}   ");
+
+                // --------------------------
+                // To delete, here for debug
+                switch (type)
+                {
+                    case RoomType.Fountain:
+                        Console.Write("F");
+                        break;
+                    case RoomType.Spawn:
+                        Console.Write("O");
+                        break;
+                    default:
+                        Console.Write("#");
+                        break;
+                }
             }
             Console.WriteLine();
+                // End delete
+                // --------------------------
+            
         }
         Console.WriteLine("Enter a key to exit map generation...");
     }
@@ -153,7 +169,7 @@ public class North : IPlayerCommand
             return (true, "");
         }
 
-        return (false, "Cannot move outside map !");
+        return (false, "You're facing a wall.");
     }
 }
 
@@ -167,7 +183,7 @@ public class South : IPlayerCommand
             return (true, "");
 
         }
-        return (false, "Cannot move outside map !");
+        return (false, "You're facing a wall.");
     }
 }
 
@@ -180,7 +196,7 @@ public class East : IPlayerCommand
             player.Position = new Position(player.Position.X+1, player.Position.Y);
             return (true, "");
         }
-        return (false, "Cannot move outside map !");
+        return (false, "You're facing a wall.");
     }
 }
 
@@ -194,7 +210,7 @@ public class West : IPlayerCommand
             return (true, "");
         }
 
-        return (false, "Cannot move outside map !");
+        return (false, "You're facing a wall.");
     }
 }
 
