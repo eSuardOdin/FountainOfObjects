@@ -31,7 +31,6 @@ public class Game
 {
     private Player Player {get; set;}
     private Map Map {get; set;}
-
     public Game(Player player, Map map) 
     {
         Player = player;
@@ -39,17 +38,18 @@ public class Game
     }
     private void RunCommand(IPlayerCommand command) 
     {
-        (bool isCommand, string error) = command.RunCommand(Player, Map);
+        (bool isCommand, string message) = command.RunCommand(Player, Map);
         if(isCommand) 
         {
             Console.Clear();
             Console.WriteLine(Player.Position.ToString());
+            if(message != "") Console.WriteLine(message); 
         }
         else
         {
             Console.Clear();
             Console.WriteLine(Player.Position.ToString());
-            Console.WriteLine(error);
+            Console.WriteLine(message);
         }
     }
 
@@ -63,6 +63,7 @@ public class Game
                 ConsoleKey.LeftArrow => new West(),
                 ConsoleKey.UpArrow => new North(),
                 ConsoleKey.DownArrow => new South(),
+                ConsoleKey.E => new ActivateFountain(),
             };
             Console.WriteLine(command);
             RunCommand(command);
@@ -73,8 +74,15 @@ public class Game
 public class Map 
 {
     public Room[,] Rooms {get;}
+    public Position Fountain {get; init;}
+    public Position Spawn {get; init;}
+    public bool IsFountainActive {get; private set;}
+
     public Map(Position spawn, Position fountain, int width, int length)
     {
+        IsFountainActive = false;
+        Spawn = new Position(spawn.X, spawn.Y);
+        Fountain = new Position(fountain.X, fountain.Y);
         Rooms = new Room[width,length];
         for (int x = 0; x < width; x++)
         {
@@ -91,6 +99,11 @@ public class Map
             Console.WriteLine();
         }
         Console.WriteLine("Enter a key to exit map generation...");
+    }
+
+    public void SwitchFountainOn() 
+    {
+        IsFountainActive = true;
     }
 }
 
@@ -134,7 +147,7 @@ public class North : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        if(player.IsAlive && player.Position.Y < map.Rooms.GetLength(1) - 1) 
+        if(player.Position.Y < map.Rooms.GetLength(1) - 1) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y+1);
             return (true, "");
@@ -148,7 +161,7 @@ public class South : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        if(player.IsAlive && player.Position.Y > 0) 
+        if(player.Position.Y > 0) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y-1);
             return (true, "");
@@ -162,7 +175,7 @@ public class East : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        if(player.IsAlive && player.Position.X < map.Rooms.GetLength(0) - 1) 
+        if(player.Position.X < map.Rooms.GetLength(0) - 1) 
         {
             player.Position = new Position(player.Position.X+1, player.Position.Y);
             return (true, "");
@@ -175,7 +188,7 @@ public class West : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        if(player.IsAlive && player.Position.X > 0)  
+        if(player.Position.X > 0)  
         {
             player.Position = new Position(player.Position.X-1, player.Position.Y);
             return (true, "");
@@ -189,7 +202,10 @@ public class ActivateFountain : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-
+        if(!map.IsFountainActive && player.Position.X == map.Fountain.X && player.Position.Y == map.Fountain.Y) {
+            map.SwitchFountainOn();
+            return (true, "You found a lever and pull it to trigger the fountain.\nYou can hear water flows loudly now.\nTime to leave this place, go back to the entrance...");
+        }
         return (false, "No fountain to activate");
     }
 }
@@ -204,12 +220,12 @@ public static class InputHandler {
             Console.WriteLine("Please enter next direction with arrow key...");
             key = Console.ReadKey();
         } while(
+            key.Key != ConsoleKey.E &&
             key.Key != ConsoleKey.RightArrow &&
             key.Key != ConsoleKey.LeftArrow &&
             key.Key != ConsoleKey.UpArrow &&
             key.Key != ConsoleKey.DownArrow
         );
-        Console.WriteLine($"Key : {key.Key}");
         return key;
     }
 }
