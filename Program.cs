@@ -1,24 +1,4 @@
-﻿/*
-    Player navigates in a grid based map while in darkness
-    Relies on senses (Smell, Hearing) to determine what room they are in
-    and what danger there is
-
-
-    Game flow : 
-        Player is told what they can sens in the dark (see, hear, smell)
-        Get chance to type action
-        Action checked and executed, loop.
-
-    
-    
-Découpage des tâches :
-
-    - Avoir un joueur avec une position
-    - Avoir des commandes pour le déplacer
-
-
-*/
-
+﻿
 
 Player player = new Player();
 Map map = new Map(new Position(4,2), new Position(5,3), 7, 4);
@@ -29,13 +9,56 @@ game.RunGame();
 
 public class Game 
 {
-    private Player Player {get; set;}
+    public Player Player {get; private set;}
     private Map Map {get; set;}
+    private ISense[] _senses;
+
+
+
     public Game(Player player, Map map) 
     {
         Player = player;
         Map = map;
+
+        _senses = new ISense[] {
+            new SenseLight(),
+            new SenseAdjacentPit(),
+        };
     }
+
+    /// <summary>
+    /// Returns the type of room in the location.
+    /// </summary>
+    /// <returns>Type of the current room</returns>
+    public RoomType GetRoomTypeAtLocation(int x, int y) 
+    {
+        return Map.Rooms[x, y].Type;
+    } 
+
+    /// <summary>
+    /// Checks if a Room type is adjacent to the player's position
+    /// </summary>
+    /// <param name="type">The type of room checked</param>
+    /// <returns>True if adjacent</returns>
+    public bool IsRoomTypeAdjacent(RoomType type) // -> Warning : generate Out of bound, must fix it
+    {
+        (int x, int y) = (Player.Position.X, Player.Position.Y);
+        return (
+            GetRoomTypeAtLocation(x + 1, y) == type ||
+            GetRoomTypeAtLocation(x - 1, y) == type ||
+            GetRoomTypeAtLocation(x, y + 1) == type ||
+            GetRoomTypeAtLocation(x, y - 1) == type ||
+            GetRoomTypeAtLocation(x + 1, y + 1) == type ||
+            GetRoomTypeAtLocation(x - 1, y + 1) == type ||
+            GetRoomTypeAtLocation(x + 1, y - 1) == type ||
+            GetRoomTypeAtLocation(x - 1, y - 1) == type
+        );
+    }
+
+    /// <summary>
+    /// Wait for an input command and display the result
+    /// </summary>
+    /// <param name="command">The command to run</param>
     private void RunCommand(IPlayerCommand command) 
     {
         (bool isCommand, string message) = command.RunCommand(Player, Map);
@@ -53,6 +76,9 @@ public class Game
         }
     }
 
+    /// <summary>
+    /// Game loop
+    /// </summary>
     public void RunGame() 
     {
         while(Player.IsAlive)
@@ -72,6 +98,12 @@ public class Game
                 ConsoleKey.E => new ActivateFountain(),
             };
             RunCommand(command);
+
+            // Senses check
+            foreach (var sense in _senses)
+            {
+                if(sense.CanSense(this)) Console.WriteLine(sense.SenseDisplay());
+            }
         }
     }
 }
@@ -96,29 +128,12 @@ public class Map
                 RoomType type;
                 if(x == spawn.X && y == spawn.Y) type = RoomType.Spawn;
                 else if(x == fountain.X && y == fountain.Y) type = RoomType.Fountain;
+                else if(x == 1 && y == 1) type = RoomType.Pit;
                 else type = RoomType.Normal;
 
                 Rooms[x,y] = new Room(type);
 
-                // --------------------------
-                // To delete, here for debug
-                switch (type)
-                {
-                    case RoomType.Fountain:
-                        Console.Write("F");
-                        break;
-                    case RoomType.Spawn:
-                        Console.Write("O");
-                        break;
-                    default:
-                        Console.Write("#");
-                        break;
-                }
-            }
-            Console.WriteLine();
-                // End delete
-                // --------------------------
-            
+            } 
         }
         Console.WriteLine("Enter a key to exit map generation...");
     }
@@ -154,16 +169,19 @@ public class Player
 
 public class Room 
 {
-    RoomType Type {get; init;}
+    public RoomType Type {get; private init;}
     public Room(RoomType type) {
         Type = type;
     }
 }
 
+
+// Commands
 public interface IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map);
 }
+
 
 public class North : IPlayerCommand
 {
@@ -233,6 +251,47 @@ public class ActivateFountain : IPlayerCommand
 }
 
 
+
+
+// Senses
+public interface ISense
+{
+    public bool CanSense(Game game);
+    public string SenseDisplay();
+}
+
+public class SenseLight : ISense
+{
+    public bool CanSense(Game game) {
+        return game.GetRoomTypeAtLocation(game.Player.Position.X, game.Player.Position.Y) == RoomType.Spawn;
+    }
+
+    public string SenseDisplay() {
+        return "You can sense the heat of sunlight, this must be the cavern entrance.";
+    }
+}
+
+public class SenseAdjacentPit : ISense
+{
+    public bool CanSense(Game game) {
+        return game.IsRoomTypeAdjacent(RoomType.Pit);
+    }
+
+    public string SenseDisplay() {
+        return "You hear the wind blowing and noise echoing. There must be a pit somewhere near.";
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 public static class InputHandler {
 
     public static ConsoleKeyInfo GetPlayerMove() {
@@ -252,4 +311,4 @@ public static class InputHandler {
     }
 }
 
-public enum RoomType {Spawn, Fountain, Normal, OffMap};
+public enum RoomType {Spawn, Fountain, Normal, Pit, OffMap};
