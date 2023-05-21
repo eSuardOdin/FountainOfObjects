@@ -20,6 +20,8 @@ public class Game
         Player = player;
         Map = map;
 
+
+        // Add all possible senses
         _senses = new ISense[] {
             new SenseLight(),
             new SenseAdjacentPit(),
@@ -40,7 +42,7 @@ public class Game
     /// </summary>
     /// <param name="type">The type of room checked</param>
     /// <returns>True if adjacent</returns>
-    public bool IsRoomTypeAdjacent(RoomType type) // -> Warning : generate Out of bound, must fix it
+    public bool IsRoomTypeAdjacent(RoomType type) 
     {
         (int x, int y) = (Player.Position.X, Player.Position.Y);
         return (
@@ -291,13 +293,6 @@ public class SenseAdjacentPit : ISense
         return "You hear the wind blowing and noise echoing. There must be a pit somewhere near.";
     }
 }
-
-
-
-
-
-
-
 
 
 
