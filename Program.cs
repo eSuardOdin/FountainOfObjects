@@ -1,7 +1,7 @@
 ﻿
 
 Player player = new Player();
-Map map = new Map(new Position(4,2), new Position(5,3), 7, 4);
+Map map = new Map(new Position(4,2), new Position(5,3), 10, 8);
 Game game = new Game(player, map);
 
 game.RunGame();
@@ -104,6 +104,11 @@ public class Game
             {
                 if(sense.CanSense(this)) Console.WriteLine(sense.SenseDisplay());
             }
+
+            if (GetRoomTypeAtLocation(Player.Position.X, Player.Position.Y) == RoomType.Pit) {
+                Console.WriteLine("You falled into a pit to your death.");
+                Player.Kill();
+            }
         }
     }
 }
@@ -126,9 +131,10 @@ public class Map
             for (int y = 0; y < length; y++)
             {
                 RoomType type;
-                if(x == spawn.X && y == spawn.Y) type = RoomType.Spawn;
+                if (x == 0 || x == width - 1 || y == 0 || y == length - 1) type = RoomType.OffMap;
+                else if(x == spawn.X && y == spawn.Y) type = RoomType.Spawn;
                 else if(x == fountain.X && y == fountain.Y) type = RoomType.Fountain;
-                else if(x == 1 && y == 1) type = RoomType.Pit;
+                else if(x == 5 && y == 5) type = RoomType.Pit;
                 else type = RoomType.Normal;
 
                 Rooms[x,y] = new Room(type);
@@ -154,7 +160,7 @@ public class Player
 
     public Player() {
         IsAlive = true;
-        Position = new Position(0,0);
+        Position = new Position(1,1);
     }
 
     /// <summary>
@@ -187,7 +193,8 @@ public class North : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        if(player.Position.Y < map.Rooms.GetLength(1) - 1) 
+        // if(player.Position.Y < map.Rooms.GetLength(1) - 1) 
+        if(map.Rooms[player.Position.X, player.Position.Y+1].Type != RoomType.OffMap)
         {
             player.Position = new Position(player.Position.X, player.Position.Y+1);
             return (true, "");
@@ -201,7 +208,8 @@ public class South : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        if(player.Position.Y > 0) 
+        // if(player.Position.Y > 0)
+        if(map.Rooms[player.Position.X, player.Position.Y-1].Type != RoomType.OffMap) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y-1);
             return (true, "");
@@ -215,7 +223,8 @@ public class East : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        if(player.Position.X < map.Rooms.GetLength(0) - 1) 
+        // if(player.Position.X < map.Rooms.GetLength(0) - 1)
+        if(map.Rooms[player.Position.X+1, player.Position.Y].Type != RoomType.OffMap) 
         {
             player.Position = new Position(player.Position.X+1, player.Position.Y);
             return (true, "");
@@ -228,7 +237,8 @@ public class West : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        if(player.Position.X > 0)  
+        // if(player.Position.X > 0)  
+        if(map.Rooms[player.Position.X-1, player.Position.Y].Type != RoomType.OffMap)
         {
             player.Position = new Position(player.Position.X-1, player.Position.Y);
             return (true, "");
