@@ -1,8 +1,7 @@
 ﻿
 
-Player player = new Player();
 Map map = new Map(new Position(4,2), new Position(5,3), 10, 8);
-Game game = new Game(player, map);
+Game game = new Game(map);
 
 game.RunGame();
 
@@ -15,10 +14,12 @@ public class Game
 
 
 
-    public Game(Player player, Map map) 
+    public Game(Map map) 
     {
-        Player = player;
+
         Map = map;
+        Player = new Player(Map.Spawn);
+        Console.WriteLine(Player.Position.ToString()); // Print it at first. To refactor
 
 
         // Add all possible senses
@@ -38,7 +39,7 @@ public class Game
         if(
             x >= Map.Rooms.GetLength(0)  ||
             x <= 0                       ||
-            y >= Map.Rooms.GetLength(1) ||
+            y >= Map.Rooms.GetLength(1)  ||
             y <= 0
             )
         {
@@ -152,7 +153,6 @@ public class Map
 
             } 
         }
-        Console.WriteLine("Enter a key to exit map generation...");
     }
 
     public void SwitchFountainOn() 
@@ -169,9 +169,10 @@ public class Player
     public Position Position {get; set;}
 
 
-    public Player() {
+    public Player(Position spawn) 
+    {
         IsAlive = true;
-        Position = new Position(1,1);
+        Position = new Position(spawn.X, spawn.Y);
     }
 
     /// <summary>
