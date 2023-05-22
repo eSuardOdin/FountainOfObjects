@@ -335,6 +335,12 @@ public static class InputHandler {
         );
         return key;
     }
+
+    public static int ChooseNumber(int min, int max) 
+    {
+        return 1;
+    }
+
 }
 
 public enum RoomType {Spawn, Fountain, Normal, Pit, OffMap};
