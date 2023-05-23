@@ -1,4 +1,7 @@
-﻿
+﻿int test = InputHandler.ChooseNumber("Choose a digit", 0, 9);
+System.Console.WriteLine(test);
+
+
 
 Map map = new Map(new Position(4,2), new Position(5,3), 10, 8);
 Game game = new Game(map);
@@ -336,9 +339,15 @@ public static class InputHandler {
         return key;
     }
 
-    public static int ChooseNumber(int min, int max) 
+    public static int ChooseNumber(string prompt, int min, int max) 
     {
-        return 1;
+        int res;
+        Console.Write($"{prompt} ({min}-{max}) :");
+        while(!int.TryParse(Console.ReadLine(), out res) || (res < min || res > max))
+        {
+            Console.WriteLine($"Please enter a number between {min}-{max}");
+        }
+        return res;
     }
 
 }
