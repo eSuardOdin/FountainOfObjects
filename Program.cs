@@ -1,8 +1,7 @@
 ﻿
 
-Player player = new Player();
 Map map = new Map(new Position(4,2), new Position(5,3), 10, 8);
-Game game = new Game(player, map);
+Game game = new Game(map);
 
 game.RunGame();
 
@@ -15,25 +14,37 @@ public class Game
 
 
 
-    public Game(Player player, Map map) 
+    public Game(Map map) 
     {
-        Player = player;
+
         Map = map;
+        Player = new Player(Map.Spawn);
+        Console.WriteLine(Player.Position.ToString()); // Print it at first. To refactor
 
 
         // Add all possible senses
         _senses = new ISense[] {
             new SenseLight(),
             new SenseAdjacentPit(),
+            new SensFountain(),
         };
     }
 
     /// <summary>
-    /// Returns the type of room in the location.
+    /// Returns the type of room in the location. Returns OffMap if index is outside Rooms array bounds
     /// </summary>
     /// <returns>Type of the current room</returns>
     public RoomType GetRoomTypeAtLocation(int x, int y) 
     {
+        if(
+            x >= Map.Rooms.GetLength(0)  ||
+            x <= 0                       ||
+            y >= Map.Rooms.GetLength(1)  ||
+            y <= 0
+            )
+        {
+            return RoomType.OffMap;
+        }
         return Map.Rooms[x, y].Type;
     } 
 
@@ -133,8 +144,7 @@ public class Map
             for (int y = 0; y < length; y++)
             {
                 RoomType type;
-                if (x == 0 || x == width - 1 || y == 0 || y == length - 1) type = RoomType.OffMap;
-                else if(x == spawn.X && y == spawn.Y) type = RoomType.Spawn;
+                if(x == spawn.X && y == spawn.Y) type = RoomType.Spawn;
                 else if(x == fountain.X && y == fountain.Y) type = RoomType.Fountain;
                 else if(x == 5 && y == 5) type = RoomType.Pit;
                 else type = RoomType.Normal;
@@ -143,7 +153,6 @@ public class Map
 
             } 
         }
-        Console.WriteLine("Enter a key to exit map generation...");
     }
 
     public void SwitchFountainOn() 
@@ -160,9 +169,10 @@ public class Player
     public Position Position {get; set;}
 
 
-    public Player() {
+    public Player(Position spawn) 
+    {
         IsAlive = true;
-        Position = new Position(1,1);
+        Position = new Position(spawn.X, spawn.Y);
     }
 
     /// <summary>
@@ -195,8 +205,8 @@ public class North : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        // if(player.Position.Y < map.Rooms.GetLength(1) - 1) 
-        if(map.Rooms[player.Position.X, player.Position.Y+1].Type != RoomType.OffMap)
+        if(player.Position.Y < map.Rooms.GetLength(1) - 1) 
+        // if(map.Rooms[player.Position.X, player.Position.Y+1].Type != RoomType.OffMap)
         {
             player.Position = new Position(player.Position.X, player.Position.Y+1);
             return (true, "");
@@ -210,8 +220,8 @@ public class South : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        // if(player.Position.Y > 0)
-        if(map.Rooms[player.Position.X, player.Position.Y-1].Type != RoomType.OffMap) 
+        if(player.Position.Y > 0)
+        // if(map.Rooms[player.Position.X, player.Position.Y-1].Type != RoomType.OffMap) 
         {
             player.Position = new Position(player.Position.X, player.Position.Y-1);
             return (true, "");
@@ -225,8 +235,8 @@ public class East : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        // if(player.Position.X < map.Rooms.GetLength(0) - 1)
-        if(map.Rooms[player.Position.X+1, player.Position.Y].Type != RoomType.OffMap) 
+        if(player.Position.X < map.Rooms.GetLength(0) - 1)
+        // if(map.Rooms[player.Position.X+1, player.Position.Y].Type != RoomType.OffMap) 
         {
             player.Position = new Position(player.Position.X+1, player.Position.Y);
             return (true, "");
@@ -239,8 +249,8 @@ public class West : IPlayerCommand
 {
     public (bool, string) RunCommand(Player player, Map map)
     {
-        // if(player.Position.X > 0)  
-        if(map.Rooms[player.Position.X-1, player.Position.Y].Type != RoomType.OffMap)
+        if(player.Position.X > 0)  
+        // if(map.Rooms[player.Position.X-1, player.Position.Y].Type != RoomType.OffMap)
         {
             player.Position = new Position(player.Position.X-1, player.Position.Y);
             return (true, "");
@@ -283,6 +293,17 @@ public class SenseLight : ISense
     }
 }
 
+public class SensFountain : ISense
+{
+    public bool CanSense(Game game) {
+        return game.GetRoomTypeAtLocation(game.Player.Position.X, game.Player.Position.Y) == RoomType.Fountain;
+    }
+
+    public string SenseDisplay() {
+        return "You hear water flowing.";
+    }
+}
+
 public class SenseAdjacentPit : ISense
 {
     public bool CanSense(Game game) {
@@ -314,6 +335,12 @@ public static class InputHandler {
         );
         return key;
     }
+
+    public static int ChooseNumber(int min, int max) 
+    {
+        return 1;
+    }
+
 }
 
 public enum RoomType {Spawn, Fountain, Normal, Pit, OffMap};
