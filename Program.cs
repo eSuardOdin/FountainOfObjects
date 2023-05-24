@@ -77,7 +77,7 @@ public class Game
             // Senses check
             foreach (var sense in _senses)
             {
-                if(sense.CanSense(this)) Console.WriteLine(sense.SenseDisplay());
+                if(sense.CanSense(Map)) Console.WriteLine(sense.SenseDisplay());
             }
 
             if (Map.GetRoomTypeAtLocation(Player.Position.X, Player.Position.Y) == RoomType.Pit) {
