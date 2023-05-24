@@ -64,6 +64,13 @@ public class Game
                 Console.WriteLine("You escaped, congratulations.");
                 break;
             }
+
+            // Senses check
+            foreach (var sense in _senses)
+            {
+                if(sense.CanSense(Map)) Console.WriteLine(sense.SenseDisplay());
+            }
+
             IPlayerCommand command = InputHandler.GetPlayerMove().Key switch
             {
                 ConsoleKey.RightArrow => new East(),
@@ -73,13 +80,6 @@ public class Game
                 ConsoleKey.E => new ActivateFountain(),
             };
             RunCommand(command);
-
-            // Senses check
-            foreach (var sense in _senses)
-            {
-                if(sense.CanSense(Map)) Console.WriteLine(sense.SenseDisplay());
-            }
-
             if (Map.GetRoomTypeAtLocation(Player.Position.X, Player.Position.Y) == RoomType.Pit) {
                 Console.WriteLine("You falled into a pit to your death.");
                 Player.Kill();
@@ -117,6 +117,7 @@ public class Map
                 if(x == Spawn.X && y == Spawn.Y) type = RoomType.Spawn;
                 else if(x == Fountain.X && y == Fountain.Y) type = RoomType.Fountain;
                 // else if(x == 5 && y == 5) type = RoomType.Pit;
+                else if (x == Spawn.X && (y == Spawn.Y + 1 || y == Spawn.Y - 1)) type = RoomType.Pit;
                 else type = RoomType.Normal;
 
                 Rooms[x,y] = new Room(type);
