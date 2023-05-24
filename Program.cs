@@ -48,6 +48,7 @@ public class Game
             Console.WriteLine(Player.Position.ToString());
             Console.WriteLine(message);
         }
+        Map.UpdatePlayerPosition(Player.Position.X, Player.Position.Y);
     }
 
     /// <summary>
@@ -92,12 +93,14 @@ public class Map
     public Room[,] Rooms {get; private set;}
     public Position Fountain {get; init;}
     public Position Spawn {get; init;}
+    public Position PlayerPosition {get; private set;}
     public bool IsFountainActive {get; private set;}
 
     public Map(int size, int pitNb)
     {
         // Get random pos of Spawn
         Spawn = GetRandomPosition(0, size);
+        PlayerPosition = new Position(Spawn.X, Spawn.Y);
         // Do while Spawn == Fountain -> Random pos fountain
         do
         {
@@ -130,6 +133,11 @@ public class Map
             } while (Rooms[pit.X, pit.Y].Type != RoomType.Normal);
             Rooms[pit.X, pit.Y].Type = RoomType.Pit;
         }
+    }
+
+    public void UpdatePlayerPosition(int x, int y)
+    {
+        PlayerPosition = new Position(x,y);
     }
 
     public void SwitchFountainOn() 
@@ -173,9 +181,9 @@ public class Map
     /// <param name="type">The type of room checked</param>
     /// <param name="player">The player whose position is checked</param>
     /// <returns>True if adjacent</returns>
-    public bool IsRoomTypeAdjacent(RoomType type, Player player) 
+    public bool IsRoomTypeAdjacent(RoomType type, Position playerPos) 
     {
-        (int x, int y) = (player.Position.X, player.Position.Y);
+        (int x, int y) = (playerPos.X, playerPos.Y);
         return (
             GetRoomTypeAtLocation(x + 1, y) == type ||
             GetRoomTypeAtLocation(x - 1, y) == type ||
@@ -306,14 +314,14 @@ public class ActivateFountain : IPlayerCommand
 // Senses
 public interface ISense
 {
-    public bool CanSense(Game game);
+    public bool CanSense(Map map);
     public string SenseDisplay();
 }
 
 public class SenseLight : ISense
 {
-    public bool CanSense(Game game) {
-        return game.Map.GetRoomTypeAtLocation(game.Player.Position.X, game.Player.Position.Y) == RoomType.Spawn;
+    public bool CanSense(Map map) {
+        return map.GetRoomTypeAtLocation(map.PlayerPosition.X, map.PlayerPosition.Y) == RoomType.Spawn;
     }
 
     public string SenseDisplay() {
@@ -323,8 +331,8 @@ public class SenseLight : ISense
 
 public class SensFountain : ISense
 {
-    public bool CanSense(Game game) {
-        return game.Map.GetRoomTypeAtLocation(game.Player.Position.X, game.Player.Position.Y) == RoomType.Fountain;
+    public bool CanSense(Map map) {
+        return map.GetRoomTypeAtLocation(map.PlayerPosition.X, map.PlayerPosition.Y) == RoomType.Fountain;
     }
 
     public string SenseDisplay() {
@@ -334,8 +342,8 @@ public class SensFountain : ISense
 
 public class SenseAdjacentPit : ISense
 {
-    public bool CanSense(Game game) {
-        return game.Map.IsRoomTypeAdjacent(RoomType.Pit, game.Player);
+    public bool CanSense(Map map) {
+        return map.IsRoomTypeAdjacent(RoomType.Pit, map.PlayerPosition);
     }
 
     public string SenseDisplay() {
