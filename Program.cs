@@ -116,8 +116,6 @@ public class Map
                 RoomType type;
                 if(x == Spawn.X && y == Spawn.Y) type = RoomType.Spawn;
                 else if(x == Fountain.X && y == Fountain.Y) type = RoomType.Fountain;
-                // else if(x == 5 && y == 5) type = RoomType.Pit;
-                else if (x == Spawn.X && (y == Spawn.Y + 1 || y == Spawn.Y - 1)) type = RoomType.Pit;
                 else type = RoomType.Normal;
 
                 Rooms[x,y] = new Room(type);
