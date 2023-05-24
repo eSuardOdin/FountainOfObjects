@@ -1,10 +1,4 @@
-﻿int test = InputHandler.ChooseNumber("Choose a digit", 0, 9);
-System.Console.WriteLine(test);
-
-
-
-Map map = new Map(new Position(4,2), new Position(5,3), 10, 8);
-Game game = new Game(map);
+﻿Game game = new Game();
 
 game.RunGame();
 
@@ -17,10 +11,10 @@ public class Game
 
 
 
-    public Game(Map map) 
+    public Game() 
     {
-
-        Map = map;
+        int mapSize = InputHandler.ChooseNumber("Please choose cavern size", 5, 8);
+        Map = new Map(mapSize, 2);
         Player = new Player(Map.Spawn);
         Console.WriteLine(Player.Position.ToString()); // Print it at first. To refactor
 
@@ -41,9 +35,9 @@ public class Game
     {
         if(
             x >= Map.Rooms.GetLength(0)  ||
-            x <= 0                       ||
+            x < 0                        ||
             y >= Map.Rooms.GetLength(1)  ||
-            y <= 0
+            y < 0
             )
         {
             return RoomType.OffMap;
@@ -131,36 +125,61 @@ public class Game
 
 public class Map 
 {
-    public Room[,] Rooms {get;}
+    public Room[,] Rooms {get; private set;}
     public Position Fountain {get; init;}
     public Position Spawn {get; init;}
     public bool IsFountainActive {get; private set;}
 
-    public Map(Position spawn, Position fountain, int width, int length)
+    public Map(int size, int pitNb)
     {
-        IsFountainActive = false;
-        Spawn = new Position(spawn.X, spawn.Y);
-        Fountain = new Position(fountain.X, fountain.Y);
-        Rooms = new Room[width,length];
-        for (int x = 0; x < width; x++)
+        // Get random pos of Spawn
+        Spawn = GetRandomPosition(0, size);
+        // Do while Spawn == Fountain -> Random pos fountain
+        do
         {
-            for (int y = 0; y < length; y++)
+            Fountain = GetRandomPosition(0, size);
+        } while (Fountain.Equals(Spawn));
+        // Populate map
+        IsFountainActive = false;
+        Rooms = new Room[size,size];
+        for (int x = 0; x < size; x++)
+        {
+            for (int y = 0; y < size; y++)
             {
                 RoomType type;
-                if(x == spawn.X && y == spawn.Y) type = RoomType.Spawn;
-                else if(x == fountain.X && y == fountain.Y) type = RoomType.Fountain;
-                else if(x == 5 && y == 5) type = RoomType.Pit;
+                if(x == Spawn.X && y == Spawn.Y) type = RoomType.Spawn;
+                else if(x == Fountain.X && y == Fountain.Y) type = RoomType.Fountain;
+                // else if(x == 5 && y == 5) type = RoomType.Pit;
                 else type = RoomType.Normal;
 
                 Rooms[x,y] = new Room(type);
 
             } 
         }
+        // Have a number of pits to put on normal rooms, make sur they are not adjacent between them
+        for (int i = 0; i < pitNb; i++)
+        {
+            Position pit;
+            do
+            {
+                pit = GetRandomPosition(0, size);
+            } while (Rooms[pit.X, pit.Y].Type != RoomType.Normal);
+            Rooms[pit.X, pit.Y].Type = RoomType.Pit;
+        }
     }
 
     public void SwitchFountainOn() 
     {
         IsFountainActive = true;
+    }
+
+    private Position GetRandomPosition(int minLimit, int maxLimit) 
+    {
+        var rand = new Random();
+        int x,y;
+        x = rand.Next(minLimit, maxLimit);
+        y = rand.Next(minLimit, maxLimit);
+        return new Position(x, y);
     }
 }
 
@@ -190,7 +209,7 @@ public class Player
 
 public class Room 
 {
-    public RoomType Type {get; private init;}
+    public RoomType Type {get; set;}
     public Room(RoomType type) {
         Type = type;
     }
