@@ -4,6 +4,8 @@ using FountainGame.Player;
 using FountainGame.Map;
 using FountainGame.Commands;
 using FountainGame.Room;
+using FountainGame.Senses;
+using FountainGame.Io;
     public class Game 
     {
         public Player Player {get; private set;}
