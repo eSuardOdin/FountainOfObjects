@@ -1,5 +1,6 @@
 namespace FountainGame.Map
 {
+    using FountainGame.Room;
     using FountainGame.Position;    
     public class Map 
     {
