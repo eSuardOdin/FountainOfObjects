@@ -6,16 +6,18 @@ using FountainGame.Commands;
 using FountainGame.Room;
 using FountainGame.Senses;
 using FountainGame.Io;
+using FountainGame.Time;
     public class Game 
     {
         public Player Player {get; private set;}
         public Map Map {get; private set;}
         private ISense[] _senses;
-
+        private TimeKeeper TimeKeep {get; init;}
 
 
         public Game() 
         {
+            TimeKeep = new TimeKeeper(); 
             int mapSize = InputHandler.ChooseNumber("Please choose cavern size", 5, 8);
             Map = new Map(mapSize, 2);
             Player = new Player(Map.Spawn);
@@ -65,6 +67,7 @@ using FountainGame.Io;
                 {
                     Console.Clear();
                     Console.WriteLine("You escaped, congratulations.");
+                    TimeKeep.Exit();
                     break;
                 }
 
@@ -86,6 +89,7 @@ using FountainGame.Io;
                 if (Map.GetRoomTypeAtLocation(Player.Position.X, Player.Position.Y) == RoomType.Pit) {
                     Console.WriteLine("You falled into a pit to your death.");
                     Player.Kill();
+                    TimeKeep.Exit();
                 }
             }
         }
